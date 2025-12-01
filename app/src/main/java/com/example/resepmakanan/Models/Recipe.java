@@ -3,43 +3,95 @@ package com.example.resepmakanan.Models;
 import androidx.annotation.NonNull;
 
 public class Recipe {
-    private String id;
-    private String Title;
-    private String Image;
-    private int servings;
-    private int readyInMins;
+    private int id;
+    private String namaResep;
+    private String gambar;      // <— ini yang benar
+    private String bahan;
+    private String instruksi;
+    private String porsi;
+    private String durasi;
 
-    public Recipe(String id, String title, String image, int servings, int readyInMins) {
-        this.id = id;
-        Title = title;
-        Image = image;
-        this.servings = servings;
-        this.readyInMins = readyInMins;
-    }
+    private float avgRating;
+    private int totalComments;
 
-    public String getId() {
+    // untuk favorit
+    private boolean isFavorite;
+
+    // --- getter & setter ---
+
+    public int getId() {
         return id;
     }
 
-    public String getTitle() {
-        return Title;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getImage(){
-        return Image;
+    public String getNamaResep() {
+        return namaResep;
     }
 
-    public int getServings() {
-        return servings;
+    public void setNamaResep(String namaResep) {
+        this.namaResep = namaResep;
     }
 
-    public int getReadyInMins() {
-        return readyInMins;
+    public String getGambar() {
+        return gambar;
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return getTitle();
+    public void setGambar(String gambar) {
+        this.gambar = gambar;
+    }
+
+    public String getBahan() {
+        return bahan;
+    }
+
+    public void setBahan(String bahan) {
+        this.bahan = bahan;
+    }
+
+    public String getInstruksi() {
+        return instruksi;
+    }
+
+    public void setInstruksi(String instruksi) {
+        this.instruksi = instruksi;
+    }
+
+    public String getPorsi() {
+        return porsi;
+    }
+
+    public void setPorsi(String porsi) {
+        this.porsi = porsi;
+    }
+
+    public String getDurasi() {
+        return durasi;
+    }
+
+    public void setDurasi(String durasi) {
+        this.durasi = durasi;
+    }
+
+    public float getAvgRating() {
+        return avgRating;
+    }
+
+    public void setAvgRating(float avgRating) {
+        this.avgRating = avgRating;
+    }
+
+    public int getTotalComments() {
+        return totalComments;
+    }
+
+    public void setTotalComments(int totalComments) {
+        this.totalComments = totalComments;
+    }
+    public boolean isFavorite() { return isFavorite; }
+    public void setFavorite(boolean favorite) {
+        this.isFavorite = favorite;
     }
 }

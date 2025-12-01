@@ -1,131 +1,186 @@
 package com.example.resepmakanan.Activities;
 
 import android.os.Bundle;
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
-import android.util.Log;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.resepmakanan.BuildConfig;
+import com.example.resepmakanan.Fragment.CommentFragment;
+import com.example.resepmakanan.Fragment.RecipeFragment;
+import com.example.resepmakanan.Managers.SessionManager;
 import com.example.resepmakanan.R;
+import com.example.resepmakanan.Requests.FavoriteRequests;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class RecipeActivity extends AppCompatActivity {
 
-    private TextView foodName, recipeText, recipeCookTime, recipeServings;
-    private ImageView img;
-    private JSONArray ingredientsArr;
-    public String api_key = BuildConfig.SP_API_KEY;
+    private int recipeId, userId;
+    private TextView tvCookTime, tvServings;
+    private ImageView imgRecipe;
+    private CheckBox cbFavorite;
+    private RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.recipe_page);
 
-        // Init views
-        foodName = findViewById(R.id.recipeFoodName);
-        recipeText = findViewById(R.id.recipeText);
-        img = findViewById(R.id.recipeFoodImage);
-        recipeCookTime = findViewById(R.id.recipeCookTime);
-        recipeServings = findViewById(R.id.recipeServings);
+        queue = Volley.newRequestQueue(this);
 
-        // Get data from intent
-        String recipeId = getIntent().getStringExtra("id");
-        String title = getIntent().getStringExtra("title");
-        String imageUrl = getIntent().getStringExtra("img");
-        String cookTime = getIntent().getStringExtra("cooktime");
-        String servings = getIntent().getStringExtra("servings");
+        // Prevens SystemBar overlapping
+        EdgeToEdge.enable(this);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
+            return insets;
+        });
 
+        // Ambil data dari intent
+        recipeId = getIntent().getIntExtra("recipe_id", -1);
+
+        // Session user
+        SessionManager session = new SessionManager(this);
+        userId = session.getId();
+
+        // UI references
+        imgRecipe = findViewById(R.id.recipeFoodImage);
+        cbFavorite = findViewById(R.id.cbFavorite);
+
+        // Back button
         ImageButton returnButton = findViewById(R.id.returnToPageButton);
         returnButton.setOnClickListener(v -> finish());
 
-        // Set title immediately
-        if (title != null) foodName.setText(title);
-        if (cookTime != null) recipeCookTime.setText(cookTime);
-        if (servings != null) recipeServings.setText(servings);
+        // Navigation buttons
+        TextView navRecipe = findViewById(R.id.nav_recipe);
+        TextView navReview = findViewById(R.id.nav_review);
 
-        // Load image if available
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            Picasso.get().load(imageUrl).into(img);
-        } else {
-            img.setImageResource(R.drawable.martabak); // fallback image
-        }
+        navRecipe.setSelected(true);
+        loadFragment(RecipeFragment.newInstance(recipeId));
 
-        // Fetch recipe details from API
-        if (recipeId != null) {
-            getRecipeData(recipeId);
-        }
+        navRecipe.setOnClickListener(v -> {
+            navRecipe.setSelected(true);
+            navReview.setSelected(false);
+            loadFragment(RecipeFragment.newInstance(recipeId));
+        });
+
+        navReview.setOnClickListener(v -> {
+            navRecipe.setSelected(false);
+            navReview.setSelected(true);
+            loadFragment(CommentFragment.newInstance(recipeId));
+        });
+
+        // Fetch recipe details
+        fetchRecipeById(recipeId);
+
+        // Fetch favorite status dari server
+        fetchFavoriteStatus();
+
+        // Set listener checkbox
+        cbFavorite.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Tambah favorite
+                FavoriteRequests.addFavorite(this, queue, userId, recipeId,
+                        () -> Toast.makeText(this, "Ditambahkan ke favorit", Toast.LENGTH_SHORT).show(),
+                        msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                );
+            } else {
+                // Hapus favorite
+                FavoriteRequests.removeFavorite(this, queue, userId, recipeId,
+                        () -> Toast.makeText(this, "Dihapus dari favorit", Toast.LENGTH_SHORT).show(),
+                        msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
     }
 
-    private void getRecipeData(final String recipeId) {
-        String URL = "https://api.spoonacular.com/recipes/" + recipeId + "/information?apiKey=" + api_key;
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
+    private void loadFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.recipe_fragment_container, fragment)
+                .commit();
+    }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Request.Method.GET,
-                URL,
-                null,
+    private void fetchRecipeById(int id) {
+        String url = "http://10.0.2.2/recipe_api/recipes/get_recipe_by_id.php?id=" + id;
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
-                        // ✅ Set cook time & servings directly from response
-                        int readyInMinutes = response.optInt("readyInMinutes", -1);
-                        int servings = response.optInt("servings", -1);
+                        if (!response.getBoolean("success")) return;
 
-                        if (readyInMinutes != -1) {
-                            recipeCookTime.setText(readyInMinutes + " mins");
-                        }
-                        if (servings != -1) {
-                            recipeServings.setText(servings + " people");
-                        }
+                        JSONObject recipe = response.getJSONObject("data");
 
-                        // Ingredients
-                        ingredientsArr = response.getJSONArray("extendedIngredients");
-                        StringBuilder ingredientsBuilder = new StringBuilder("<b>Ingredients:</b><br>");
-                        for (int i = 0; i < ingredientsArr.length(); i++) {
-                            JSONObject jsonObject1 = ingredientsArr.getJSONObject(i);
-                            ingredientsBuilder.append("• ")
-                                    .append(jsonObject1.optString("original"))
-                                    .append("<br>");
-                        }
+                        tvCookTime.setText(recipe.getString("cook_time"));
+                        tvServings.setText(recipe.getString("servings"));
 
-                        // Instructions
-                        String instructions = response.optString("instructions", "");
-                        if (instructions.isEmpty()) {
-                            String msg = "Unfortunately, the recipe you were looking for was not found. " +
-                                    "To view the original recipe click on the link below:<br>" +
-                                    "<a href=" + response.get("spoonacularSourceUrl") + ">"
-                                    + response.get("spoonacularSourceUrl") + "</a>";
-                            recipeText.setMovementMethod(LinkMovementMethod.getInstance());
-                            recipeText.setText(Html.fromHtml(msg));
+                        String imgUrl = recipe.getString("image");
+                        if (imgUrl != null && !imgUrl.isEmpty()) {
+                            Picasso.get().load(imgUrl).into(imgRecipe);
                         } else {
-                            ingredientsBuilder.append("<br><b>Instructions:</b><br>").append(instructions);
-                            recipeText.setText(Html.fromHtml(ingredientsBuilder.toString()));
+                            imgRecipe.setImageResource(R.drawable.martabak);
                         }
 
-                    } catch (JSONException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
-                        recipeText.setText("Error parsing recipe details.");
+                    }
+                },
+                error -> error.printStackTrace()
+        );
+
+        queue.add(req);
+    }
+
+    private void fetchFavoriteStatus() {
+        String url = "http://10.0.2.2/recipe_api/recipes/is_favorite.php?user_id=" + userId + "&recipe_id=" + recipeId;
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        if (response.getBoolean("success")) {
+                            boolean isFav = response.getBoolean("favorite");
+
+                            // Pause listener sementara
+                            cbFavorite.setOnCheckedChangeListener(null);
+                            cbFavorite.setChecked(isFav);
+                            // Pasang lagi listener
+                            cbFavorite.setOnCheckedChangeListener((buttonView, checked) -> {
+                                if (checked) {
+                                    FavoriteRequests.addFavorite(this, queue, userId, recipeId,
+                                            () -> Toast.makeText(this, "Ditambahkan ke favorit", Toast.LENGTH_SHORT).show(),
+                                            msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                                    );
+                                } else {
+                                    FavoriteRequests.removeFavorite(this, queue, userId, recipeId,
+                                            () -> Toast.makeText(this, "Dihapus dari favorit", Toast.LENGTH_SHORT).show(),
+                                            msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                                    );
+                                }
+                            });
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 },
                 error -> {
-                    Log.i("RecipeActivity", "the res is error: " + error.toString());
-                    recipeText.setText("Failed to load recipe details.");
+                    // fallback: biarkan checkbox false
                 }
         );
-        requestQueue.add(jsonObjectRequest);
+
+        queue.add(req);
     }
 }

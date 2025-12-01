@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BottomNavText" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+</resources>

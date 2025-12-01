@@ -93,6 +93,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingHorizontal="20dp"
+            android:visibility="gone"
+            />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_category_recylcerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="12dp"
             />
         <TextView
             android:id="@+id/emptyViewSearch"

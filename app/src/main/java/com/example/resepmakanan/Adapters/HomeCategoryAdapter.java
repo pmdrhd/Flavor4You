@@ -13,19 +13,19 @@ import com.example.resepmakanan.R;
 
 import java.util.List;
 
-public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.MyViewHolder>{
+public class HomeCategoryAdapter extends RecyclerView.Adapter<HomeCategoryAdapter.MyViewHolder>{
 
     Context context;
     List<String> categoryList;
 
-    public CategoryAdapter(Context context, List<String> categoryList) {
+    public HomeCategoryAdapter(Context context, List<String> categoryList) {
         this.context = context;
         this.categoryList = categoryList;
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_category, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_category_home, parent, false);
         return new MyViewHolder(view);
     }
 
@@ -46,8 +46,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.MyView
 
         public MyViewHolder(View itemView) {
             super(itemView);
-            tvCategory = itemView.findViewById(R.id.categoryText);
-            cardContainer = itemView.findViewById(R.id.categoryCard);
+            tvCategory = itemView.findViewById(R.id.categoryHomeText);
+            cardContainer = itemView.findViewById(R.id.categoryHomeCard);
         }
     }
 }

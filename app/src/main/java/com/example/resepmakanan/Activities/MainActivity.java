@@ -4,12 +4,18 @@ import static android.app.PendingIntent.getActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.WindowInsets;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.resepmakanan.Fragment.FavoriteFragment;
 import com.example.resepmakanan.Fragment.HomeFragment;
 import com.example.resepmakanan.Fragment.SearchFragment;
 import com.example.resepmakanan.Fragment.SettingFragment;
@@ -22,6 +28,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Prevents SystemBar and NavigationBar overlapping
+        EdgeToEdge.enable(this);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
+            return insets;
+        });
 
         getSupportFragmentManager()
                 .beginTransaction()
@@ -41,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, AIChatActivity.class);
                 startActivity(intent);
                 return false;
+            } else if (itemId == R.id.nav_favorites) {
+                selectedFragment = new FavoriteFragment();
             } else if (itemId == R.id.nav_setting) {
                 selectedFragment = new SettingFragment();
             }

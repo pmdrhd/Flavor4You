@@ -1,5 +1,8 @@
 package com.example.resepmakanan.Fragment;
 
+import static com.example.resepmakanan.Requests.FavoriteRequests.addFavorite;
+import static com.example.resepmakanan.Requests.FavoriteRequests.removeFavorite;
+
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -19,32 +23,39 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.resepmakanan.Adapters.HomeCategoryAdapter;
+import com.example.resepmakanan.Adapters.SearchCategoryAdapter;
 import com.example.resepmakanan.BuildConfig;
+import com.example.resepmakanan.Managers.SessionManager;
 import com.example.resepmakanan.Models.Recipe;
 import com.example.resepmakanan.R;
-import com.example.resepmakanan.RecyclerView.RecyclerViewAdapter;
+import com.example.resepmakanan.Adapters.RecipeCardAdapter;
+import com.example.resepmakanan.APIService.ApiConfig;
+import com.example.resepmakanan.Requests.FavoriteRequests;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SearchFragment extends Fragment {
 
-    private RecyclerView recyclerView;
+    private RecyclerView recyclerView, categoryRV;
     private ProgressBar progressBar;
+    private int userId;
     private TextView emptyView;
     private EditText searchInput;
     private ImageButton searchButton;
     private List<Recipe> listRecipe = new ArrayList<>();
-    private RecyclerViewAdapter adapter;
+    private RecipeCardAdapter adapter;
+    private RequestQueue queue;
     public String api_key = BuildConfig.SP_API_KEY; // put your key here
+    SearchCategoryAdapter categoryAdapter;
 
     @Nullable
     @Override
@@ -58,7 +69,7 @@ public class SearchFragment extends Fragment {
         searchInput = root.findViewById(R.id.searchInput);
         searchButton = root.findViewById(R.id.searchButton);
 
-        adapter = new RecyclerViewAdapter(getContext(), listRecipe);
+        adapter = new RecipeCardAdapter(getContext(), listRecipe, this::onFavoriteClick);
         recyclerView.setAdapter(adapter);
 
         searchButton.setOnClickListener(v -> {
@@ -68,33 +79,112 @@ public class SearchFragment extends Fragment {
             }
         });
 
+        ArrayList<String> categories = new ArrayList<>(Arrays.asList(
+                "Breakfast",
+                "Lunch",
+                "Dinner",
+                "Snack",
+                "Dessert",
+                "Beverage"
+        ));
+
+        categoryRV = root.findViewById(R.id.search_category_recylcerview);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+        categoryRV.setLayoutManager(gridLayoutManager);
+        categoryAdapter = new SearchCategoryAdapter(getActivity(), categories);
+        categoryRV.setAdapter(categoryAdapter);
+
+        SessionManager session = new SessionManager(requireContext());
+        userId = session.getId();
+
+        adapter = new RecipeCardAdapter(getContext(), listRecipe, (recipe, position) -> {
+            RequestQueue queue = Volley.newRequestQueue(requireContext());
+
+            if (recipe.isFavorite()) {
+                FavoriteRequests.addFavorite(
+                        getContext(), queue, userId, recipe.getId(),
+                        () -> {},
+                        msg -> {}
+                );
+            } else {
+                FavoriteRequests.removeFavorite(
+                        getContext(), queue, userId, recipe.getId(),
+                        () -> {},
+                        msg -> {}
+                );
+            }
+        });
         return root;
+    }
+
+    public void onFavoriteClick(Recipe recipe, int position) {
+        if (recipe.isFavorite()) {
+            removeFavorite(recipe, position);
+        } else {
+            addFavorite(recipe, position);
+        }
+    }
+
+    private void addFavorite(Recipe recipe, int position) {
+        FavoriteRequests.addFavorite(getContext(), queue, userId, recipe.getId(),
+                () -> {
+                    recipe.setFavorite(true);
+                    adapter.notifyItemChanged(position);
+                },
+                msg -> Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show()
+        );
+    }
+
+    private void removeFavorite(Recipe recipe, int position) {
+        FavoriteRequests.removeFavorite(getContext(), queue, userId, recipe.getId(),
+                () -> {
+                    recipe.setFavorite(false);
+                    adapter.notifyItemChanged(position);
+                },
+                msg -> Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show()
+        );
     }
 
     private void searchRecipes(String query) {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setAlpha(0);
         emptyView.setVisibility(View.GONE);
+        categoryRV.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
 
-        String url = "https://api.spoonacular.com/recipes/complexSearch?query="
-                + query + "&number=20&addRecipeInformation=true&apiKey=" + api_key;
+        String url = ApiConfig.URL_SEARCH_RECIPES + "?q=" + query;
 
-        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+        queue = Volley.newRequestQueue(getActivity());
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
                 response -> {
                     try {
-                        listRecipe.clear();
-                        JSONArray results = response.getJSONArray("results");
+                        boolean success = response.getBoolean("success");
+                        if (!success) {
+                            progressBar.setVisibility(View.GONE);
+                            emptyView.setVisibility(View.VISIBLE);
+                            return;
+                        }
 
-                        for (int i = 0; i < results.length(); i++) {
-                            JSONObject obj = results.getJSONObject(i);
-                            listRecipe.add(new Recipe(
-                                    obj.optString("id"),
-                                    obj.optString("title"),
-                                    obj.optString("image"),
-                                    obj.optInt("servings",0),
-                                    obj.optInt("readyInMinutes", 0)
-                            ));
+                        listRecipe.clear();
+                        JSONArray arr = response.getJSONArray("data");
+
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject obj = arr.getJSONObject(i);
+
+                            Recipe r = new Recipe();
+                            r.setId(obj.optInt("id"));
+                            r.setNamaResep(obj.optString("nama_resep"));
+                            r.setGambar(obj.optString("gambar"));
+                            r.setPorsi(obj.optString("porsi"));
+                            r.setDurasi(obj.optString("durasi"));
+                            r.setAvgRating((float) obj.optDouble("avg_rating", 0));
+                            r.setTotalComments(obj.optInt("total_comments", 0));
+                            r.setFavorite(obj.optBoolean("favorite", false));
+
+                            listRecipe.add(r);
                         }
 
                         adapter.notifyDataSetChanged();
@@ -103,8 +193,6 @@ public class SearchFragment extends Fragment {
 
                         if (listRecipe.isEmpty()) {
                             emptyView.setVisibility(View.VISIBLE);
-                        } else {
-                            emptyView.setVisibility(View.GONE);
                         }
 
                     } catch (JSONException e) {
@@ -118,8 +206,9 @@ public class SearchFragment extends Fragment {
                     progressBar.setVisibility(View.GONE);
                     recyclerView.setAlpha(0);
                     emptyView.setVisibility(View.VISIBLE);
-                });
+                }
+        );
 
-        requestQueue.add(jsonObjectRequest);
+        queue.add(req);
     }
 }

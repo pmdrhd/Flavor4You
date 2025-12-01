@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/brown"
+        android:fitsSystemWindows="false"
         app:itemIconSize="32dp"
         app:labelVisibilityMode="labeled"
         app:itemIconTint="@drawable/bottom_nav_icon_color"

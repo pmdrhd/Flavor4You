@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- CHECKED -->
+    <item android:state_checked="true">
+        <layer-list>
+            <item
+                android:width="35dp"
+                android:height="35dp"
+                android:gravity="center"
+                android:drawable="@drawable/visibility_on_icon" />
+        </layer-list>
+    </item>
+
+    <!-- UNCHECKED -->
+    <item>
+        <layer-list>
+            <item
+                android:width="35dp"
+                android:height="35dp"
+                android:gravity="center"
+                android:drawable="@drawable/visibility_off_icon" />
+        </layer-list>
+    </item>
+
+</selector>

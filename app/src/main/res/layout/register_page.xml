@@ -4,9 +4,12 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/bg_login"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/main"
+    >
 
     <ImageButton
+        android:id="@+id/return_icon"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_margin="20dp"
@@ -27,7 +30,7 @@
         android:layout_weight="1"
         android:layout_marginHorizontal="40dp"
         android:layout_marginBottom="40dp"
-        android:background="@drawable/bg_rounded_shape"
+        android:background="@drawable/rounded_shape"
         android:layout_gravity="center"
         >
 
@@ -137,7 +140,8 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:srcCompat="@drawable/account_icon"
+                    app:srcCompat="@drawable/icon_email"
+                    android:scaleType="fitStart"
                     app:tint="@android:color/white" />
 
                 <EditText
@@ -192,17 +196,20 @@
                     app:srcCompat="@drawable/lock_icon"
                     app:tint="@android:color/white" />
 
-                <ImageButton
-                    android:id="@+id/imageButton6"
+                <CheckBox
+                    android:id="@+id/checkboxVisibility"
                     android:layout_width="30dp"
-                    android:layout_height="28dp"
+                    android:layout_height="24dp"
                     android:layout_marginEnd="8dp"
                     android:background="@android:color/transparent"
+                    android:button="@drawable/visibility_toggle"
+                    android:buttonTint="@color/white"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:srcCompat="@drawable/visibility_off_icon"
-                    app:tint="@android:color/white" />
+                    android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+                    />
 
                 <EditText
                     android:id="@+id/passwordInput"
@@ -211,6 +218,7 @@
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/poppins"
                     android:hint="Password"
+                    android:inputType="textPassword"
                     android:textColorHint="@color/white"
                     android:textColor="@color/white"
                     android:imeOptions="actionSearch"
@@ -218,7 +226,7 @@
                     android:paddingEnd="8dp"
                     android:singleLine="true"
                     app:layout_constraintStart_toEndOf="@+id/passwordIcon"
-                    app:layout_constraintEnd_toStartOf="@id/imageButton6"
+                    app:layout_constraintEnd_toStartOf="@id/checkboxVisibility"
                     />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -234,7 +242,7 @@
             app:layout_constraintTop_toBottomOf="@id/cv2"
             android:layout_marginTop="10dp"
             >
-            <ImageButton
+            <CheckBox
                 android:id="@+id/checkboxRemember"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
@@ -256,7 +264,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/cv3"
+            android:id="@+id/cvRegister"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
@@ -295,6 +303,7 @@
                 android:text="Already have an account?"
                 />
             <TextView
+                android:id="@+id/txtLogin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_bold"

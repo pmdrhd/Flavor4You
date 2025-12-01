@@ -6,4 +6,8 @@
     </style>
 
     <style name="Theme.ResepMakanan" parent="Base.Theme.ResepMakanan" />
+    <style name="Theme.YourApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:colorControlHighlight">@android:color/transparent</item>
+        <item name="colorControlHighlight">@android:color/transparent</item>
+    </style>
 </resources>

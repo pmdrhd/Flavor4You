@@ -1,32 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/darkGreen">
-    <LinearLayout
-        android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginHorizontal="20dp"
+    android:layout_marginBottom="20dp"
+    android:background="@drawable/rounded_shape"
+    >
+
+    <ProgressBar
+        android:id="@+id/recipeProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_gravity="center"
+        />
+
+    <TextView
+        android:id="@+id/tvErrorMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Can not load recipe."
+        android:fontFamily="@font/poppins_medium"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
         <FrameLayout
+            android:id="@+id/main"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginBottom="20dp"
-            android:background="@drawable/rounded_shape"
             >
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:layout_margin="8dp">
+                android:layout_margin="8dp"
+                >
                 <TextView
                     android:id="@+id/recipeFoodName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/special_elite"
-                    android:text="MARTABAK MANIS"
+                    android:text="-"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:gravity="center"
@@ -66,7 +86,7 @@
                                 android:id="@+id/recipeCookTime"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="10 mins"
+                                android:text="-"
                                 android:textSize="10dp"
                                 android:fontFamily="@font/poppins"
                                 />
@@ -103,7 +123,7 @@
                                 android:id="@+id/recipeServings"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="3 people"
+                                android:text="-"
                                 android:textSize="10dp"
                                 android:fontFamily="@font/poppins"
                                 />
@@ -139,7 +159,7 @@
                                 android:id="@+id/recipeRatings"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="5.0"
+                                android:text="-"
                                 android:textSize="10dp"
                                 android:fontFamily="@font/poppins"
                                 />
@@ -148,14 +168,13 @@
                 </LinearLayout>
                 <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:fillViewport="true"
                     android:id="@+id/recipeText"
                     android:padding="8dp"
-                    android:text="Bahan:\n• 500 gram tepung terigu\n• 600 ml air hangat\n• 30 gram margarin cair\n• 2 butir telur\n• 125 gram gula pasir\n• 1,5 sdt ragi instan\n• 1 sdt baking powder\n• 1/4 sdt pasta vanili\n• 1/2 sdt garam\n• Margarine untuk olesan\n• Meses cokelat dan kacang tanah sangrai untuk taburanBahan:\n• 500 gram tepung terigu\n• 600 ml air hangat\n• 30 gram margarin cair\n• 2 butir telur\n• 125 gram gula pasir\n• 1,5 sdt ragi instan\n• 1 sdt baking powder\n• 1/4 sdt pasta vanili\n• 1/2 sdt garam\n• Margarine untuk olesan\n• Meses cokelat dan kacang tanah sangrai untuk taburan"
                     android:textSize="14sp"
                     />
             </LinearLayout>
         </FrameLayout>
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</FrameLayout>

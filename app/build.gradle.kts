@@ -30,6 +30,11 @@ android {
             "SP_API_KEY",
             "\"${providers.gradleProperty("SP_API_KEY").orNull ?: ""}\""
         )
+        buildConfigField(
+            "String",
+            "API_IP_ADDRESS",
+            "\"${providers.gradleProperty("API_IP_ADDRESS").orNull ?: ""}\""
+        )
         buildFeatures {
             buildConfig = true
         }

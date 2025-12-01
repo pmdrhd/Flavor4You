@@ -5,7 +5,11 @@ import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,7 +33,7 @@ public class AIChatActivity extends AppCompatActivity {
     private RecyclerView rv;
     private ChatAdapter adapter;
     private EditText edt;
-    private ImageButton btn;
+    private ImageButton btn, btnReturn;
 
     // ==== AUTOSCROLL (tanpa FAB) ====
     private LinearLayoutManager layoutManager;
@@ -45,9 +49,19 @@ public class AIChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.aichat_page);
 
+        EdgeToEdge.enable(this);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
         rv  = findViewById(R.id.rvChat);
         edt = findViewById(R.id.edtMessage);
         btn = findViewById(R.id.btnSend);
+
+        btnReturn = findViewById(R.id.return_icon);
+        btnReturn.setOnClickListener(view -> finish());
 
         adapter = new ChatAdapter();
         layoutManager = new LinearLayoutManager(this);
