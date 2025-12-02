@@ -24,6 +24,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.resepmakanan.Adapters.CommentAdapter;
+import com.example.resepmakanan.Managers.SessionManager;
 import com.example.resepmakanan.Models.Comment;
 import com.example.resepmakanan.R;
 
@@ -52,7 +53,7 @@ public class CommentFragment extends Fragment implements CommentAdapter.OnCommen
     private ImageButton btnSend;
     private RatingBar rbUserRating;
 
-    private int recipeId = 1;          // sementara hardcode
+    private int recipeId;          // sementara hardcode
     private String replyParentId = "0";     // 0 = comment utama
 
     private static final String BASE_URL = "http://10.0.2.2/recipe_api/comments/";
@@ -116,7 +117,11 @@ public class CommentFragment extends Fragment implements CommentAdapter.OnCommen
                 return;
             }
 
-            addComment("Sandy", rating, text, replyParentId);
+            SessionManager sm = new SessionManager(requireContext());
+            String username = sm.getUsername();
+            int userId = sm.getId();
+
+            addComment(userId, username, rating, text, replyParentId);
         });
 
         return view;
@@ -246,7 +251,7 @@ public class CommentFragment extends Fragment implements CommentAdapter.OnCommen
 
     /* ========== ADD COMMENT / REPLY ========== */
 
-    private void addComment(String name, float rating, String text, String parentId) {
+    private void addComment(int userId, String name, float rating, String text, String parentId) {
         StringRequest req = new StringRequest(Request.Method.POST, URL_ADD,
                 response -> {
                     etComment.setText("");
@@ -266,7 +271,8 @@ public class CommentFragment extends Fragment implements CommentAdapter.OnCommen
                 Map<String, String> params = new HashMap<>();
                 params.put("recipe_id", String.valueOf(recipeId));
                 params.put("parent_id", parentId);
-                params.put("user_name", name);
+                params.put("user_id", String.valueOf(userId));   // ⬅ penting
+                params.put("user_name", name);                  // ⬅ penting
                 params.put("rating", String.valueOf(rating));
                 params.put("comment_text", text);
                 return params;

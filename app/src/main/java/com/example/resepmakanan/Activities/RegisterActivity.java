@@ -1,7 +1,9 @@
 package com.example.resepmakanan.Activities;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -31,7 +34,7 @@ public class RegisterActivity extends AppCompatActivity {
     TextView txtLogin;
     ImageButton btnBack;
     CardView btnRegister;
-    CheckBox cbRemember;
+    CheckBox cbRemember,cbVisibility;
     String API_IP_ADDRESS = BuildConfig.API_IP_ADDRESS;
     String URL = "http://" + API_IP_ADDRESS + "/recipe_api/users/register.php";
 
@@ -55,6 +58,21 @@ public class RegisterActivity extends AppCompatActivity {
         txtLogin = findViewById(R.id.txtLogin);
         btnBack = findViewById(R.id.return_icon);
         cbRemember = findViewById(R.id.checkboxRemember);
+        cbVisibility = findViewById(R.id.cbVisibility);
+
+        cbVisibility.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Show password
+                passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            } else {
+                // Hide password
+                passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            }
+            Typeface poppins = ResourcesCompat.getFont(this, R.font.poppins);
+            passwordInput.setTypeface(poppins);
+            // Optional: keep cursor at the end
+            passwordInput.setSelection(passwordInput.getText().length());
+        });
 
         btnBack.setOnClickListener(v -> finish());
 
@@ -88,13 +106,13 @@ public class RegisterActivity extends AppCompatActivity {
 
                             int userId = obj.getInt("user_id");
 
-                            if (cbRemember.isChecked()) {
-                                new SessionManager(this).saveUser(
-                                        userId,
-                                        username,
-                                        email
-                                );
-                            }
+                            SessionManager sm = new SessionManager(this);
+
+                            // data user selalu disimpan
+                            sm.saveUser(userId, username, email);
+
+                            // status remember hanya jika dicentang
+                            sm.setRememberMe(cbRemember.isChecked());
 
                             startActivity(new Intent(this, MainActivity.class));
                             finish();

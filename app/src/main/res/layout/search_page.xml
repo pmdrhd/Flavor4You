@@ -7,74 +7,94 @@
     android:orientation="vertical"
     android:background="@color/white">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/bgSearch"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="43dp"
-        android:layout_margin="20dp"
-        app:cardElevation="6dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         >
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/rounded_border"
-            />
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bgSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="43dp"
+            android:layout_marginVertical="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="8dp"
+            app:cardElevation="6dp"
+            android:layout_weight="1"
             >
-
-            <ImageButton
-                android:id="@+id/searchButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="12dp"
-                android:background="@android:color/transparent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:srcCompat="@drawable/baseline_search_24"
-                app:tint="@android:color/black" />
-
-            <ImageButton
-                android:id="@+id/imageButton6"
-                android:layout_width="30dp"
-                android:layout_height="28dp"
-                android:layout_marginEnd="8dp"
-                android:background="@android:color/transparent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:srcCompat="@drawable/closesmall"
-                app:tint="@android:color/black" />
-
-            <EditText
-                android:id="@+id/searchInput"
-                android:layout_width="0dp"
+            <ImageView
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@android:color/transparent"
-                android:hint="Looking for something?"
-                android:imeOptions="actionSearch"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:singleLine="true"
-                app:layout_constraintEnd_toStartOf="@+id/imageButton6"
-                app:layout_constraintStart_toEndOf="@+id/searchButton" />
+                android:src="@drawable/rounded_border"
+                />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    >
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                    <ImageButton
+                        android:id="@+id/btnSearch"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="12dp"
+                        android:background="@android:color/transparent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:srcCompat="@drawable/baseline_search_24"
+                        app:tint="@android:color/black" />
 
-    </androidx.cardview.widget.CardView>
+                    <ImageButton
+                        android:id="@+id/btnClear"
+                        android:layout_width="30dp"
+                        android:layout_height="28dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@android:color/transparent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:srcCompat="@drawable/closesmall"
+                        app:tint="@android:color/black" />
+
+                    <EditText
+                        android:id="@+id/etNameInput"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:hint="Looking for something?"
+                        android:imeOptions="actionSearch"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:singleLine="true"
+                        app:layout_constraintEnd_toStartOf="@+id/btnClear"
+                        app:layout_constraintStart_toEndOf="@+id/btnSearch" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+        <ImageButton
+            android:id="@+id/ibSort"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginVertical="20dp"
+            android:layout_marginRight="20dp"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@drawable/sortby" />
+    </LinearLayout>
 
     <TextView
+        android:id="@+id/tvRecentSearches"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Recent Searches"
         android:textSize="19dp"
         android:fontFamily="@font/poppins_bold"
         android:layout_marginHorizontal="20dp"
+        android:visibility="gone"
         />
 
     <TextView
+        android:id="@+id/tvTopCat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Top Categories"
@@ -89,14 +109,14 @@
         android:layout_weight="1"
         >
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_search"
+            android:id="@+id/rvResult"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingHorizontal="20dp"
             android:visibility="gone"
             />
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/search_category_recylcerview"
+            android:id="@+id/rvCategory"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingHorizontal="12dp"
@@ -105,13 +125,14 @@
             android:id="@+id/emptyViewSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginVertical="80dp"
             android:gravity="center"
             android:text="No recipes found"
             android:textSize="18sp"
             android:visibility="gone"
             />
         <ProgressBar
-            android:id="@+id/progressBarSearch"
+            android:id="@+id/pbSearch"
             style="?android:attr/progressBarStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

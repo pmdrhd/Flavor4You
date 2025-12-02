@@ -76,9 +76,8 @@ public class RecipeFragment extends Fragment {
 
         if (recipeId != -1) {
             getRecipeData(recipeId);
-            Toast.makeText(getContext(),"Getting recipe data",Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(getContext(),"Data NULL",Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(),"Error: recipeId not found.",Toast.LENGTH_LONG).show();
         }
 
         return view;
@@ -103,7 +102,7 @@ public class RecipeFragment extends Fragment {
                         boolean success = response.optBoolean("success", false);
                         if (!success) {
                             tvErrorMessage.setVisibility(View.VISIBLE);
-                            recipeText.setText("Recipe not found.");
+                            tvErrorMessage.setText("Recipe not found.");
                             Toast.makeText(getContext(),"Recipe not found.",Toast.LENGTH_LONG).show();
                             return;
                         }
@@ -145,7 +144,7 @@ public class RecipeFragment extends Fragment {
 
                     } catch (JSONException e) {
                         Toast.makeText(getContext(),"Error parsing recipe data.",Toast.LENGTH_LONG).show();
-                        recipeText.setText("Error parsing recipe data.");
+                        tvErrorMessage.setText("Error parsing recipe data.");
                         flMain.setVisibility(View.GONE);
                         tvErrorMessage.setVisibility(View.VISIBLE);
                     }
@@ -156,12 +155,11 @@ public class RecipeFragment extends Fragment {
                     flMain.setVisibility(View.GONE);
                     tvErrorMessage.setVisibility(View.VISIBLE);
 
-                    recipeText.setText("Failed to load recipe details.");
+                    tvErrorMessage.setText("Failed to load recipe details.");
                     Toast.makeText(getContext(),"API ERROR.",Toast.LENGTH_LONG).show();
                     Log.e("RecipeFragment", "API ERROR: " + error.toString());
                 }
         );
-
         queue.add(req);
     }
 }

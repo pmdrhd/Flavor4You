@@ -197,7 +197,7 @@
                     app:tint="@android:color/white" />
 
                 <CheckBox
-                    android:id="@+id/checkboxVisibility"
+                    android:id="@+id/cbVisibility"
                     android:layout_width="30dp"
                     android:layout_height="24dp"
                     android:layout_marginEnd="8dp"
@@ -226,7 +226,7 @@
                     android:paddingEnd="8dp"
                     android:singleLine="true"
                     app:layout_constraintStart_toEndOf="@+id/passwordIcon"
-                    app:layout_constraintEnd_toStartOf="@id/checkboxVisibility"
+                    app:layout_constraintEnd_toStartOf="@id/cbVisibility"
                     />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -244,22 +244,15 @@
             >
             <CheckBox
                 android:id="@+id/checkboxRemember"
-                android:layout_width="30dp"
+                android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:background="@android:color/transparent"
+                android:text="Remember me"
+                android:fontFamily="@font/poppins"
                 app:srcCompat="@drawable/account_icon"
                 app:tint="@android:color/black"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Remember me"
-                android:fontFamily="@font/poppins"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/checkboxRemember"
                 />
         </androidx.constraintlayout.widget.ConstraintLayout>
 

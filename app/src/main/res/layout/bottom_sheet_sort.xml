@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tvTitleSort"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sortir"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:paddingBottom="8dp" />
+
+    <RadioGroup
+        android:id="@+id/rgSort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/rbAz"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nama (A-Z)" />
+
+        <RadioButton
+            android:id="@+id/rbNewest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Terbaru" />
+
+        <RadioButton
+            android:id="@+id/rbOldest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Terlama" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/tvClear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear"
+        android:layout_gravity="right"
+        android:textSize="16sp"
+        />
+    <Button
+        android:id="@+id/btnApplySort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Terapkan"
+        android:layout_marginTop="12dp" />
+
+</LinearLayout>

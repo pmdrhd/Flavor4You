@@ -6,4 +6,6 @@
     <color name="cream">#dcd8c9</color>
     <color name="limeGreen">#9ca978</color>
     <color name="darkGreen">#506b42</color>
+    <color name="primary">#2196F3</color>
+    <color name="categoryDefault">#E0E0E0</color>
 </resources>

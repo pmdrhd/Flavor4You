@@ -18,7 +18,7 @@ import com.example.resepmakanan.Managers.SessionManager;
 import com.example.resepmakanan.R;
 
 public class WelcomeActivity extends AppCompatActivity {
-    Boolean isLoggedIn;
+    Boolean isLoggedIn, isRemember;
     Button btnRegister, btnStart;
     LinearLayout llLoginOption;
     String username;
@@ -38,10 +38,11 @@ public class WelcomeActivity extends AppCompatActivity {
         });
 
         SessionManager session = new SessionManager(this);
-        isLoggedIn = session.isLoggedIn();
-        username = session.getUsername();
 
-        Toast.makeText(this,String.valueOf(username) + String.valueOf(isLoggedIn),Toast.LENGTH_LONG).show();
+        isRemember = session.isRemembered();
+        isLoggedIn = session.isLoggedIn();
+
+        username = session.getUsername();
 
         btnRegister = findViewById(R.id.createAccountButton);
         btnStart = findViewById(R.id.welcomeButton);
@@ -57,7 +58,7 @@ public class WelcomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        if (isLoggedIn) {
+        if (isRemember) {
             btnRegister.setVisibility(View.GONE);
             llLoginOption.setVisibility(View.GONE);
             btnStart.setVisibility(View.VISIBLE);

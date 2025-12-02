@@ -18,9 +18,13 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.resepmakanan.APIService.ApiConfig;
 import com.example.resepmakanan.Fragment.CommentFragment;
 import com.example.resepmakanan.Fragment.RecipeFragment;
 import com.example.resepmakanan.Managers.SessionManager;
+import com.example.resepmakanan.Models.Recipe;
 import com.example.resepmakanan.R;
 import com.example.resepmakanan.Requests.FavoriteRequests;
 import com.squareup.picasso.Picasso;
@@ -30,7 +34,6 @@ import org.json.JSONObject;
 public class RecipeActivity extends AppCompatActivity {
 
     private int recipeId, userId;
-    private TextView tvCookTime, tvServings;
     private ImageView imgRecipe;
     private CheckBox cbFavorite;
     private RequestQueue queue;
@@ -125,23 +128,28 @@ public class RecipeActivity extends AppCompatActivity {
 
                         JSONObject recipe = response.getJSONObject("data");
 
-                        tvCookTime.setText(recipe.getString("cook_time"));
-                        tvServings.setText(recipe.getString("servings"));
+                        String imgPath = recipe.getString("gambar");
+                        String imageUrl = imgPath != null && !imgPath.isEmpty()
+                                ? ApiConfig.IMAGE_BASE_URL + imgPath
+                                : null;
 
-                        String imgUrl = recipe.getString("image");
-                        if (imgUrl != null && !imgUrl.isEmpty()) {
-                            Picasso.get().load(imgUrl).into(imgRecipe);
+                        if (imageUrl != null) {
+                            Glide.with(this)
+                                    .load(imageUrl)
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                    .placeholder(R.drawable.ic_launcher_background) // bisa ganti sesuai placeholder
+                                    .error(R.drawable.ic_launcher_background)
+                                    .into(imgRecipe);
                         } else {
                             imgRecipe.setImageResource(R.drawable.martabak);
                         }
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 },
                 error -> error.printStackTrace()
-        );
 
+        );
         queue.add(req);
     }
 

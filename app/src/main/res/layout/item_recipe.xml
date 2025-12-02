@@ -25,14 +25,15 @@
                 app:srcCompat="@drawable/mmartabak" />
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
+                android:layout_height="90dp"
                 android:background="@color/cream"
                 android:orientation="horizontal">
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:gravity="center|left">
                     <TextView
                         android:id="@+id/tvName"
                         android:layout_width="wrap_content"
@@ -40,31 +41,44 @@
                         android:fontFamily="@font/poppins_bold"
                         android:text="Nama Makanan"
                         android:textSize="20dp"
-                        android:layout_marginHorizontal="8dp"
+                        android:layout_marginHorizontal="16dp"
                         android:gravity="center"
                         />
-                    <TextView
-                        android:id="@+id/tvRating"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_medium"
-                        android:text="⭐ 5.0 (1k+ Review)"
-                        android:textSize="20dp"
-                        android:layout_marginHorizontal="8dp"
-                        android:gravity="center"
-                        />
+                        android:orientation="horizontal"
+                        android:layout_marginLeft="16dp"
+                        android:gravity="left">
+                        <ImageView
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:src="@drawable/star_icon"
+                            />
+                        <TextView
+                            android:id="@+id/tvRating"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:fontFamily="@font/poppins_medium"
+                            android:text="5.0"
+                            android:textSize="20dp"
+                            android:layout_marginHorizontal="1dp"
+                            />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center|left">
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center"
-                        android:layout_weight="1">
+                        android:layout_marginBottom="8dp">
                         <ImageView
                             android:layout_width="28dp"
                             android:layout_height="28dp"
@@ -87,8 +101,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center"
-                        android:layout_weight="1">
+                        android:gravity="center">
                         <ImageView
                             android:layout_width="28dp"
                             android:layout_height="28dp"

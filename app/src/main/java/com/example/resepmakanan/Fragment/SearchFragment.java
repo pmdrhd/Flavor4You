@@ -1,8 +1,5 @@
 package com.example.resepmakanan.Fragment;
 
-import static com.example.resepmakanan.Requests.FavoriteRequests.addFavorite;
-import static com.example.resepmakanan.Requests.FavoriteRequests.removeFavorite;
-
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -25,13 +22,14 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.resepmakanan.Adapters.HomeCategoryAdapter;
+import com.example.resepmakanan.Adapters.RecipeCardAdapter;
 import com.example.resepmakanan.Adapters.SearchCategoryAdapter;
 import com.example.resepmakanan.BuildConfig;
 import com.example.resepmakanan.Managers.SessionManager;
+import com.example.resepmakanan.Models.CategoryItem;
 import com.example.resepmakanan.Models.Recipe;
+import com.example.resepmakanan.Models.SortBottomSheet;
 import com.example.resepmakanan.R;
-import com.example.resepmakanan.Adapters.RecipeCardAdapter;
 import com.example.resepmakanan.APIService.ApiConfig;
 import com.example.resepmakanan.Requests.FavoriteRequests;
 
@@ -40,88 +38,195 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class SearchFragment extends Fragment {
 
-    private RecyclerView recyclerView, categoryRV;
-    private ProgressBar progressBar;
-    private int userId;
-    private TextView emptyView;
-    private EditText searchInput;
-    private ImageButton searchButton;
+    private RecyclerView rvResult, rvCat;
+    private ProgressBar pb;
+    private EditText etSearch;
+    private ImageButton btnSearch, btnSort, btnClear;
+    private TextView tvEmpty, tvTopCat;
+
     private List<Recipe> listRecipe = new ArrayList<>();
     private RecipeCardAdapter adapter;
+
+    private SearchCategoryAdapter catAdapter;
+    private List<String> selectedCategories = new ArrayList<>();
+    private String selectedSort = "az";
+
     private RequestQueue queue;
-    public String api_key = BuildConfig.SP_API_KEY; // put your key here
-    SearchCategoryAdapter categoryAdapter;
+    private int userId;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.search_page, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle saved) {
+        View v = inflater.inflate(R.layout.search_page, parent, false);
 
-        recyclerView = root.findViewById(R.id.recycler_search);
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), LinearLayoutManager.VERTICAL));
-        progressBar = root.findViewById(R.id.progressBarSearch);
-        emptyView = root.findViewById(R.id.emptyViewSearch);
-        searchInput = root.findViewById(R.id.searchInput);
-        searchButton = root.findViewById(R.id.searchButton);
+        pb = v.findViewById(R.id.pbSearch);
+        etSearch = v.findViewById(R.id.etNameInput);
+        btnSearch = v.findViewById(R.id.btnSearch);
+        btnSort = v.findViewById(R.id.ibSort);
+        btnClear = v.findViewById(R.id.btnClear);
+
+        tvEmpty = v.findViewById(R.id.emptyViewSearch);
+        tvTopCat = v.findViewById(R.id.tvTopCat);
+
+        queue = Volley.newRequestQueue(requireContext());
+        SessionManager s = new SessionManager(requireContext());
+        userId = s.getId();
+
+        rvResult = v.findViewById(R.id.rvResult);
+        rvResult.setLayoutManager(new GridLayoutManager(getActivity(), LinearLayoutManager.VERTICAL));
 
         adapter = new RecipeCardAdapter(getContext(), listRecipe, this::onFavoriteClick);
-        recyclerView.setAdapter(adapter);
+        rvResult.setAdapter(adapter);
 
-        searchButton.setOnClickListener(v -> {
-            String query = searchInput.getText().toString().trim();
-            if (!TextUtils.isEmpty(query)) {
-                searchRecipes(query);
-            }
+        rvCat = v.findViewById(R.id.rvCategory);
+        rvCat.setLayoutManager(new GridLayoutManager(getActivity(), 2)); // tetap 2 kolom grid
+
+        catAdapter = new SearchCategoryAdapter(getContext(), new ArrayList<>());
+        catAdapter.setListener(cat -> {
+            selectedCategories.clear();
+            selectedCategories.add(cat); // hanya satu kategori, kalau mau multi, bisa list.add()
+            loadRecipes();
+        });
+        rvCat.setAdapter(catAdapter);
+
+        btnSearch.setOnClickListener(i -> {
+            selectedCategories.clear();
+            loadRecipes();
         });
 
-        ArrayList<String> categories = new ArrayList<>(Arrays.asList(
-                "Breakfast",
-                "Lunch",
-                "Dinner",
-                "Snack",
-                "Dessert",
-                "Beverage"
-        ));
-
-        categoryRV = root.findViewById(R.id.search_category_recylcerview);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-        categoryRV.setLayoutManager(gridLayoutManager);
-        categoryAdapter = new SearchCategoryAdapter(getActivity(), categories);
-        categoryRV.setAdapter(categoryAdapter);
-
-        SessionManager session = new SessionManager(requireContext());
-        userId = session.getId();
-
-        adapter = new RecipeCardAdapter(getContext(), listRecipe, (recipe, position) -> {
-            RequestQueue queue = Volley.newRequestQueue(requireContext());
-
-            if (recipe.isFavorite()) {
-                FavoriteRequests.addFavorite(
-                        getContext(), queue, userId, recipe.getId(),
-                        () -> {},
-                        msg -> {}
-                );
-            } else {
-                FavoriteRequests.removeFavorite(
-                        getContext(), queue, userId, recipe.getId(),
-                        () -> {},
-                        msg -> {}
-                );
-            }
+        btnSort.setOnClickListener(i -> {
+            SortBottomSheet sheet = new SortBottomSheet();
+            sheet.setListener(sort -> {
+                selectedSort = sort;
+                loadRecipes();
+            }, selectedSort);
+            sheet.show(getParentFragmentManager(), "sort");
         });
-        return root;
+
+        btnClear.setOnClickListener(i -> etSearch.setText(""));
+
+        loadCategories(); // ambil kategori dari server
+
+        return v;
+    }
+
+    private void loadCategories() {
+        rvCat.setVisibility(View.GONE);
+        pb.setVisibility(View.VISIBLE);
+
+        String url = ApiConfig.URL_GET_CATEGORIES; // pastikan URL ini sesuai
+
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    try {
+                        if (!response.getBoolean("success")) return;
+
+                        Log.d("CAT_JSON", response.toString());
+                        JSONArray arr = response.getJSONArray("data");
+                        Log.d("HomeFragment", "arr size:" + arr.length());
+
+                        List<CategoryItem> categories = new ArrayList<>();
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject o = arr.getJSONObject(i);
+                            categories.add(new CategoryItem(
+                                    o.getString("key"),   // untuk filter API
+                                    o.getString("name")   // untuk ditampilkan
+                            ));
+                        }
+
+                        // update adapter
+                        Collections.shuffle(categories);
+                        catAdapter.updateList(categories);
+
+                        rvCat.setVisibility(View.VISIBLE);
+                        pb.setVisibility(View.GONE);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "Error Category: JSON", Toast.LENGTH_SHORT).show();
+                        rvCat.setVisibility(View.GONE);
+                        tvEmpty.setVisibility(View.VISIBLE);
+                    }
+                },
+                error -> {
+                    Toast.makeText(getContext(), "Gagal load categories", Toast.LENGTH_SHORT).show();
+                    rvCat.setVisibility(View.GONE);
+                    tvEmpty.setVisibility(View.VISIBLE);
+                }
+        );
+        queue.add(req);
+    }
+
+    private void loadRecipes() {
+        pb.setVisibility(View.VISIBLE);
+        rvCat.setVisibility(View.GONE);
+        tvTopCat.setText("Results");
+        tvEmpty.setVisibility(View.GONE);
+
+        String q = etSearch.getText().toString().trim();
+        StringBuilder url = new StringBuilder(ApiConfig.URL_SEARCH_RECIPES + "?user_id=" + userId);
+
+        if (!q.isEmpty()) url.append("&search=").append(q);
+        if (!selectedCategories.isEmpty()) url.append("&kategori=").append(TextUtils.join(",", selectedCategories));
+        url.append("&sort=").append(selectedSort);
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, url.toString(), null,
+                resp -> {
+                    try {
+                        listRecipe.clear();
+                        if (!resp.getBoolean("success")) {
+                            adapter.notifyDataSetChanged();
+                            pb.setVisibility(View.GONE);
+                            return;
+                        }
+                        JSONArray arr = resp.getJSONArray("data");
+
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject o = arr.getJSONObject(i);
+                            Recipe r = new Recipe();
+                            r.setId(o.getInt("id"));
+                            r.setNamaResep(o.getString("nama_resep"));
+                            r.setGambar(o.getString("gambar"));
+                            r.setPorsi(o.optString("porsi"));
+                            r.setDurasi(o.optString("durasi"));
+                            r.setAvgRating((float) o.optDouble("avg_rating", 0));
+                            r.setTotalComments(o.optInt("total_comments", 0));
+                            r.setFavorite(o.getInt("favorite") == 1);
+                            listRecipe.add(r);
+                        }
+
+                        if (arr.length() == 0) {
+                            tvEmpty.setVisibility(View.VISIBLE);
+                        }
+
+                        adapter.notifyDataSetChanged();
+                        pb.setVisibility(View.GONE);
+                        rvResult.setVisibility(View.VISIBLE);
+
+                    } catch (Exception e) {
+                        pb.setVisibility(View.GONE);
+                        e.printStackTrace();
+                        tvEmpty.setVisibility(View.VISIBLE);
+                    }
+                }, err -> {
+            pb.setVisibility(View.GONE);
+            tvEmpty.setVisibility(View.VISIBLE);
+        });
+        queue.add(req);
     }
 
     public void onFavoriteClick(Recipe recipe, int position) {
         if (recipe.isFavorite()) {
-            removeFavorite(recipe, position);
-        } else {
             addFavorite(recipe, position);
+        } else {
+            removeFavorite(recipe, position);
         }
     }
 
@@ -130,6 +235,7 @@ public class SearchFragment extends Fragment {
                 () -> {
                     recipe.setFavorite(true);
                     adapter.notifyItemChanged(position);
+                    Toast.makeText(getContext(), "Ditambahkan ke favorit", Toast.LENGTH_SHORT).show();
                 },
                 msg -> Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show()
         );
@@ -140,75 +246,9 @@ public class SearchFragment extends Fragment {
                 () -> {
                     recipe.setFavorite(false);
                     adapter.notifyItemChanged(position);
+                    Toast.makeText(getContext(), "Dihapus dari favorit", Toast.LENGTH_SHORT).show();
                 },
                 msg -> Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show()
         );
-    }
-
-    private void searchRecipes(String query) {
-        progressBar.setVisibility(View.VISIBLE);
-        recyclerView.setAlpha(0);
-        emptyView.setVisibility(View.GONE);
-        categoryRV.setVisibility(View.GONE);
-        recyclerView.setVisibility(View.VISIBLE);
-
-        String url = ApiConfig.URL_SEARCH_RECIPES + "?q=" + query;
-
-        queue = Volley.newRequestQueue(getActivity());
-        JsonObjectRequest req = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> {
-                    try {
-                        boolean success = response.getBoolean("success");
-                        if (!success) {
-                            progressBar.setVisibility(View.GONE);
-                            emptyView.setVisibility(View.VISIBLE);
-                            return;
-                        }
-
-                        listRecipe.clear();
-                        JSONArray arr = response.getJSONArray("data");
-
-                        for (int i = 0; i < arr.length(); i++) {
-                            JSONObject obj = arr.getJSONObject(i);
-
-                            Recipe r = new Recipe();
-                            r.setId(obj.optInt("id"));
-                            r.setNamaResep(obj.optString("nama_resep"));
-                            r.setGambar(obj.optString("gambar"));
-                            r.setPorsi(obj.optString("porsi"));
-                            r.setDurasi(obj.optString("durasi"));
-                            r.setAvgRating((float) obj.optDouble("avg_rating", 0));
-                            r.setTotalComments(obj.optInt("total_comments", 0));
-                            r.setFavorite(obj.optBoolean("favorite", false));
-
-                            listRecipe.add(r);
-                        }
-
-                        adapter.notifyDataSetChanged();
-                        progressBar.setVisibility(View.GONE);
-                        recyclerView.setAlpha(1);
-
-                        if (listRecipe.isEmpty()) {
-                            emptyView.setVisibility(View.VISIBLE);
-                        }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        progressBar.setVisibility(View.GONE);
-                        emptyView.setVisibility(View.VISIBLE);
-                    }
-                },
-                error -> {
-                    Log.e("SearchFragment", "Error: " + error.toString());
-                    progressBar.setVisibility(View.GONE);
-                    recyclerView.setAlpha(0);
-                    emptyView.setVisibility(View.VISIBLE);
-                }
-        );
-
-        queue.add(req);
     }
 }

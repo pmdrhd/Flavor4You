@@ -28,6 +28,7 @@ import com.example.resepmakanan.APIService.ApiConfig;
 import com.example.resepmakanan.Adapters.HomeCategoryAdapter;
 import com.example.resepmakanan.BuildConfig;
 import com.example.resepmakanan.Managers.SessionManager;
+import com.example.resepmakanan.Models.CategoryItem;
 import com.example.resepmakanan.Models.Recipe;
 import com.example.resepmakanan.R;
 import com.example.resepmakanan.Adapters.RecipeCardAdapter;
@@ -89,20 +90,18 @@ public class HomeFragment extends Fragment {
             tvUsername.setText("Hi, Guest");
         }
 
-        ArrayList<String> categories = new ArrayList<>(Arrays.asList(
-                "Breakfast",
-                "Lunch",
-                "Dinner",
-                "Snack",
-                "Dessert",
-                "Beverage"
-        ));
-
         homeCategoryRecycler = RootView.findViewById(R.id.home_category_recyclerview);
         homeCategoryRecycler.setLayoutManager(
                 new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false)
         );
-        categoryAdapter = new HomeCategoryAdapter(getActivity(), categories);
+
+        categoryAdapter = new HomeCategoryAdapter(getActivity(), new ArrayList<>());
+        categoryAdapter.setListener(cat -> loadByCategory(cat));
+
+        homeCategoryRecycler.setAdapter(categoryAdapter);
+        // load kategori dari API
+        loadCategories();
+
         homeCategoryRecycler.setAdapter(categoryAdapter);
 
         // Load recipes
@@ -168,7 +167,7 @@ public class HomeFragment extends Fragment {
                 }
         );
         queue.add(req);
-        Toast.makeText(getContext(), "Data loaded", Toast.LENGTH_SHORT).show();
+        Log.d("HomeFragment", "Data recipes fetched");
     }
 
     private void loadFavoritesThenRecipes() {
@@ -202,7 +201,111 @@ public class HomeFragment extends Fragment {
                 error -> {
                     // fallback jika error
                     getRandomRecipes();
-                    Toast.makeText(getContext(),"Favorite list error",Toast.LENGTH_SHORT).show();
+                    Log.d("HomeFragment", "Error: Favorite list");
+                }
+        );
+
+        queue.add(req);
+    }
+
+    private void loadCategories() {
+
+        String url = ApiConfig.URL_GET_CATEGORIES; // pastikan URL ini sesuai
+
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    try {
+                        if (!response.getBoolean("success")) return;
+
+                        Log.d("CAT_JSON", response.toString());
+                        JSONArray arr = response.getJSONArray("data");
+                        Log.d("HomeFragment", "arr size:" + arr.length());
+
+                        List<CategoryItem> categories = new ArrayList<>();
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject o = arr.getJSONObject(i);
+                            categories.add(new CategoryItem(
+                                    o.getString("key"),   // untuk filter API
+                                    o.getString("name")   // untuk ditampilkan
+                            ));
+                        }
+
+                        // update adapter
+                        Collections.shuffle(categories);
+                        categoryAdapter.updateList(categories);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "Error Category: JSON", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> {
+                    Toast.makeText(getContext(), "Gagal load categories", Toast.LENGTH_SHORT).show();
+                }
+        );
+
+        queue.add(req);
+    }
+
+    private void loadByCategory(String cat) {
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        String url = ApiConfig.URL_SEARCH_RECIPES + "?kategori=" + cat + "&user_id=" + userId;
+
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                resp -> {
+                    try {
+                        listRecipe.clear();
+
+                        if (!resp.getBoolean("success")) {
+                            adapter.notifyDataSetChanged();
+                            emptyView.setVisibility(View.VISIBLE);
+                            progressBar.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        JSONArray arr = resp.getJSONArray("data");
+
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject o = arr.getJSONObject(i);
+
+                            Recipe r = new Recipe();
+                            r.setId(o.getInt("id"));
+                            r.setNamaResep(o.getString("nama_resep"));
+                            r.setGambar(o.getString("gambar"));
+                            r.setBahan(o.optString("bahan", ""));
+                            r.setInstruksi(o.optString("instruksi", ""));
+                            r.setPorsi(o.optString("porsi", ""));
+                            r.setDurasi(o.optString("durasi", ""));
+                            r.setAvgRating((float) o.optDouble("avg_rating", 0));
+                            r.setTotalComments(o.optInt("total_comments", 0));
+
+                            // gunakan fallback
+                            int fav = o.optInt("favorite", o.optInt("is_favorite", 0));
+                            r.setFavorite(fav == 1);
+
+                            listRecipe.add(r);
+                        }
+
+                        adapter.notifyDataSetChanged();
+
+                        emptyView.setVisibility(listRecipe.isEmpty() ? View.VISIBLE : View.GONE);
+                        progressBar.setVisibility(View.GONE);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                },
+                err -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(getContext(), "Gagal load data kategori", Toast.LENGTH_SHORT).show();
                 }
         );
 

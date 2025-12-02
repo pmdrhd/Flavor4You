@@ -1,7 +1,9 @@
 package com.example.resepmakanan.Activities;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -31,7 +34,7 @@ public class LoginActivity extends AppCompatActivity {
     ImageButton btnBack;
     TextView gotoRegister;
     CardView cvLogin;
-    CheckBox cbRemember;
+    CheckBox cbRemember, cbVisibility;
     String API_IP_ADDRESS = BuildConfig.API_IP_ADDRESS;
     String URL = "http://" + API_IP_ADDRESS + "/recipe_api/users/login.php";
 
@@ -55,6 +58,21 @@ public class LoginActivity extends AppCompatActivity {
         gotoRegister = findViewById(R.id.gotoRegister);
         cvLogin = findViewById(R.id.cvLogin);
         cbRemember = findViewById(R.id.checkboxRemember);
+        cbVisibility = findViewById(R.id.cbVisibility);
+
+        cbVisibility.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Show password
+                passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            } else {
+                // Hide password
+                passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            }
+            Typeface poppins = ResourcesCompat.getFont(this, R.font.poppins);
+            passwordInput.setTypeface(poppins);
+            // Optional: keep cursor at the end
+            passwordInput.setSelection(passwordInput.getText().length());
+        });
 
         // tombol kembali
         btnBack.setOnClickListener(v -> finish());
@@ -74,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
         String password   = passwordInput.getText().toString().trim();
 
         if (identifier.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Isi semua field", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Isi semua kolom", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -91,9 +109,13 @@ public class LoginActivity extends AppCompatActivity {
                             String username = user.getString("username");
                             String email = user.getString("email");
 
-                            if (cbRemember.isChecked()) {
-                                new SessionManager(this).saveUser(id, username, email);
-                            }
+                            SessionManager sm = new SessionManager(this);
+
+                            // data user selalu disimpan
+                            sm.saveUser(id, username, email);
+
+                            // status remember hanya jika dicentang
+                            sm.setRememberMe(cbRemember.isChecked());
 
                             startActivity(new Intent(this, MainActivity.class));
                             finish();
